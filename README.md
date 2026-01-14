@@ -10,10 +10,10 @@ A **multiagent AI system** that combines specialized financial agents to deliver
 
 | Agent | Role | Status | Capabilities |
 |-------|------|--------|--------------|
-| 🎯 Supervisor Agent | Orchestrator | 🔄 In Development  | Routes queries, manages workflow, coordinates agents |
-| 🤖 Generalist Agent | General Assistant | 📋 Planned | Handles general queries unrelated to finance, conversational support |
 | 💼 Investment Agent | Specialist | ✅ Active | Portfolio recommendations, market analysis |
 | 🔍 Review Agent | Quality Control | ✅ Active | Validates outputs, provides feedback, ensures consistency |
+| 🎯 Supervisor Agent | Orchestrator | 🔄 In Development  | Routes queries, manages workflow, coordinates agents |
+| 🤖 Generalist Agent | General Assistant | 📋 Planned | Handles general queries unrelated to finance, conversational support |
 | 📊 Tax Specialist Agent | Specialist | 🔄 In Development | Tax optimization, deduction strategies |
 | ⚠️ Risk Assessment Agent | Specialist | 📋 Planned | Risk evaluation, mitigation strategies |
 | 💰 Budget Planner Agent | Specialist | 📋 Planned | Expense tracking, budget optimization |
