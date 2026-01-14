@@ -197,8 +197,6 @@ $ uv run main.py
 🔄 Routing to Generalist Agent...
 ✅ Paris is the capital and largest city of France.
 ```
-
-
 <!-- ## 📞 Contact
 
 *Add contact information* -->
