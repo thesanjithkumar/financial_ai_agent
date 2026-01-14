@@ -1,12 +1,12 @@
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate, BasePromptTemplate
 
 
-def research_prompt() -> PromptTemplate:
+def research_prompt(current_time:  str) -> BasePromptTemplate:
     researcher_prompt_template = """
     You are a Professional Financial Data Researcher. 
     Your goal is to retrieve accurate, real-time data for Indian stocks and Indian mutual funds.
 
-    CURRENT DATE: January 12, 2026
+    CURRENT DATE: {current_time}
 
     INSTRUCTIONS:
     1. Use the search tool to find current prices, P/E ratios, and market cap.
@@ -29,12 +29,12 @@ def research_prompt() -> PromptTemplate:
     {agent_scratchpad}
     """
 
-    return PromptTemplate.from_template(researcher_prompt_template)
+    return PromptTemplate.from_template(researcher_prompt_template).partial(current_time=current_time)
 
 
 def review_prompt() -> PromptTemplate:
     reviewer_prompt_template = """
-    You are a Senior Financial Quality Auditor. 
+    You are a Senior Financial Quality Auditor/General Quality Auditor. 
     Critique the Researcher's report based on accuracy and completeness.
 
     Available Tools: {tools}
