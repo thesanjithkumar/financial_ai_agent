@@ -36,17 +36,14 @@ def run_financial_system(user_query, max_retries=3):
     while iterations < max_iterations:
         print(f"\n--- ROUND {iterations + 1} ---")
         
-        # Retry logic for API calls
         for retry in range(max_retries):
             try:
-                # Step 1: Research
                 research_input = f"Task: {user_query}\nPrevious Feedback: {current_feedback}"
                 res_out = research_agent.invoke({"input": research_input})["output"]
                 final_research_output = res_out
                 
-                # Step 2: Review
                 rev_out = reviewer_agent.invoke({"input": res_out})["output"]
-                break  # Success, exit retry loop
+                break
                 
             except ServerError as e:
                 if retry < max_retries - 1:
@@ -54,7 +51,7 @@ def run_financial_system(user_query, max_retries=3):
                     print(f"⏳ API overloaded. Retrying in {wait_time} seconds...")
                     time.sleep(wait_time)
                 else:
-                    raise  # Re-raise after all retries exhausted
+                    raise
 
         print(f"🔍 Review Result: {'PASS' if 'PASS' in rev_out.upper() else 'FAIL'}")
 
