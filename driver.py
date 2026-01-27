@@ -1,16 +1,18 @@
 import os
+import time
 from dotenv import load_dotenv
 from datetime import datetime
-load_dotenv()
-
+from google.genai.errors import ServerError
 from langchain_google_genai import ChatGoogleGenerativeAI
-from tools import search
 from prompt import research_prompt, review_prompt
 from agents import research_agent, reviewer_agent
 
+load_dotenv()
+
+from tools import search
+
+
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-# os.environ["GOOGLE_API_KEY"] = os.environ.get('GOOGLE_API_KEY')
-# os.environ["GOOGLE_CSE_ID"] = os.environ.get('GOOGLE_CSE_ID')
 
 llm = ChatGoogleGenerativeAI(
     model="gemma-3-27b-it", 
@@ -25,34 +27,44 @@ review_prompt = review_prompt()
 research_agent = research_agent(llm, search, research_prompt)
 reviewer_agent = reviewer_agent(llm, review_prompt)
 
-def run_financial_system(user_query):
+def run_financial_system(user_query, max_retries=3):
     current_feedback = "None"
     iterations = 0
     max_iterations = 3
-    final_research_output = ""  # Store the research output
+    final_research_output = ""
 
     while iterations < max_iterations:
         print(f"\n--- ROUND {iterations + 1} ---")
         
-        # Step 1: Research
-        research_input = f"Task: {user_query}\nPrevious Feedback: {current_feedback}"
-        res_out = research_agent.invoke({"input": research_input})["output"]
-        final_research_output = res_out  # Store the research result
-
-        # Step 2: Review
-        rev_out = reviewer_agent.invoke({"input": res_out})["output"]
+        # Retry logic for API calls
+        for retry in range(max_retries):
+            try:
+                # Step 1: Research
+                research_input = f"Task: {user_query}\nPrevious Feedback: {current_feedback}"
+                res_out = research_agent.invoke({"input": research_input})["output"]
+                final_research_output = res_out
+                
+                # Step 2: Review
+                rev_out = reviewer_agent.invoke({"input": res_out})["output"]
+                break  # Success, exit retry loop
+                
+            except ServerError as e:
+                if retry < max_retries - 1:
+                    wait_time = (retry + 1) * 2  # Exponential backoff: 2, 4, 6 seconds
+                    print(f"⏳ API overloaded. Retrying in {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    raise  # Re-raise after all retries exhausted
 
         print(f"🔍 Review Result: {'PASS' if 'PASS' in rev_out.upper() else 'FAIL'}")
 
         if "PASS" in rev_out.upper():
-            # Return the research output, not the reviewer feedback
             return final_research_output
         else:
             current_feedback = rev_out
             iterations += 1
-            print(f"❌ Review failed. Feedback: {rev_out[:100]}...")
+            print(f"❌ Review failed. Feedback: {rev_out}...")
     
-    # If max iterations reached, return the last research output
     return "Reached maximum attempts. Final Research Report:\n" + final_research_output
 
 if __name__ == "__main__":
