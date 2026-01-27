@@ -112,7 +112,12 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 
 # Run the CLI application
-uv run main.py
+uv run driver.py
+
+# Run user interface
+.venv\Scripts\activate
+
+streamlit run streamlit.py
 
 # Run Streamlit UI (coming soon)
 # uv run streamlit run app.py
