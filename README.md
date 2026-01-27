@@ -68,6 +68,9 @@ The system will leverage multiple MCP servers to extend functionality:
 - Basic CLI interface
 
 ### Planned (v2.0 - LangGraph + MCP)
+#### Application View:
+![Final Application](images/final_application_view.png)
+#### Architecture View:
 ![Final Architecture](images/final_architecture_view.png)
 
 **Enhanced Multi-Agent System Flow:**
