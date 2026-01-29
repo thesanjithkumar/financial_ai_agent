@@ -48,8 +48,7 @@ The system will leverage multiple MCP servers to extend functionality:
   - Conversation history for context retention
 
 ### 💻 User Interface
-- ~~**Current:** Command-line interface (CLI)~~
-- **Current:** Streamlit-based chat UI
+- **Current:** Streamlit-based chat UI with real-time agent interaction ✅
 - **Next Phase:** Migration to React/Next.js for production-ready web application *(planned)*
 
 ## 🏗️ Architecture
@@ -58,15 +57,14 @@ The system will leverage multiple MCP servers to extend functionality:
 ![Initial Architecture](images/initial_architecture.png)
 
 **Flow:**
-1. User submits financial query via CLI
+1. User submits financial query via Streamlit chat interface
 2. **Investment Agent** performs analysis using Search tools
 3. **Review Agent** validates output and provides feedback
-4. Final verified response returned to user
+4. Final verified response returned to user in chat UI
 
 **Current Tools:**
 - LangChain Search (→ migrating to MCP Search Server)
-- Basic CLI interface
-- Basic Streamlit chat UI
+- ✅ Streamlit chat UI with conversation history
 
 ### Planned (v2.0 - LangGraph + MCP)
 #### Application View:
@@ -111,17 +109,24 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install dependencies
 uv sync
+```
 
+### Running the Application
+
+**Option 1: Streamlit Chat UI (Recommended)**
+```bash
+# Activate virtual environment
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/Mac
+
+# Run Streamlit app
+streamlit run streamlit.py
+```
+
+**Option 2: CLI Interface**
+```bash
 # Run the CLI application
 uv run driver.py
-
-# Run user interface
-.venv\Scripts\activate
-
-streamlit run streamlit.py
-
-# Run Streamlit UI (coming soon)
-# uv run streamlit run app.py
 ```
 
 ## 🎯 Use Cases
@@ -141,29 +146,29 @@ streamlit run streamlit.py
 
 ## 📋 Roadmap
 
-### Phase 1 - Foundation (Current)
+### Phase 1 - Foundation ✅ **COMPLETED**
 - [x] ✅ Basic LangChain multiagent setup
 - [x] ✅ Investment Agent implementation
 - [x] ✅ Review Agent implementation
+- [x] ✅ Streamlit chat UI with conversation history
 - [ ] 🔄 Supervisor Agent orchestration
 - [ ] 🔄 Generalist Agent for non-financial queries
-<!-- - [ ] 🔄 CLI interface enhancements -->
 
-### Phase 2 - Enhanced Features
-- [x] 📋 Streamlit chat UI
+### Phase 2 - Enhanced Features (In Progress)
 - [ ] 📋 MCP Web Search Server integration
 - [ ] 📋 MCP File Data Server (Excel/CSV processing)
 - [ ] 📋 Tax Specialist Agent
 - [ ] 📋 Risk Assessment Agent
 - [ ] 📋 Context-aware routing (Supervisor logic)
+- [ ] 📋 Conversation memory across sessions
 
 ### Phase 3 - Production Ready
 - [ ] 📋 Migration to LangGraph
 - [ ] 📋 React/Next.js web application
-- [ ] 📋 Database integration
+- [ ] 📋 Database integration (MCP Database Server)
 - [ ] 📋 Budget Planner Agent
 - [ ] 📋 Real-time market data integration
-- [ ] 📋 Multi-turn conversation support
+- [ ] 📋 Multi-user support with authentication
 
 ## 💻 Tech Stack
 
@@ -174,40 +179,47 @@ streamlit run streamlit.py
 - uv (package manager)
 
 **Frontend:**
-- ~~CLI (current)~~
-- Streamlit (current)
+- ✅ Streamlit (current - interactive chat UI)
 - React/Next.js (planned)
 
 ## ⚠️ Current Limitations
 
-- ~~CLI-only interface (Streamlit UI in development)~~
-- No persistent memory between sessions
+- No persistent memory between sessions (in-session only)
 - Limited to basic investment advice
-- No real-time market data
 - Generalist Agent not yet implemented
 - Supervisor routing logic in development
-- No context retention across queries
-<!--- Single-user focused-->
+- No multi-user support
+- No authentication/authorization
+<!-- - No real-time market data integration -->
 
-<!-- ## 📝 Example Usage
+## 🎨 Features
 
-```text
-# Financial query
-$ uv run main.py
+### Streamlit Chat UI ✅
+- Real-time chat interface
+- Conversation history within session
+- Agent activity tracking
+- Clean, intuitive design
+- Markdown support for formatted responses
+
+## 📝 Example Usage
+
+### Streamlit Chat UI
+1. Launch the app: `streamlit run streamlit.py`
+2. Open browser at `http://localhost:8501`
+3. Type your financial query in the chat input
+4. Watch agents collaborate in real-time
+5. Receive verified investment recommendations
+
+### CLI
+```bash
+$ uv run driver.py
 > What stocks should I invest in for long-term growth?
 🔄 Routing to Investment Agent...
 [Investment Agent performs analysis...]
 🔍 Review Agent validating...
 ✅ [Verified investment recommendations provided]
+```
 
-# General query  
-$ uv run main.py
-> What's the capital of France?
-🔄 Routing to Generalist Agent...
-✅ Paris is the capital and largest city of France.
-``` -->
 <!-- ## 📞 Contact
 
 *Add contact information* -->
-
-
