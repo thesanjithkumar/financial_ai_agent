@@ -47,7 +47,7 @@ def run_financial_system(user_query, max_retries=3):
                 
             except ServerError as e:
                 if retry < max_retries - 1:
-                    wait_time = (retry + 1) * 2  # Exponential backoff: 2, 4, 6 seconds
+                    wait_time = (retry + 1) * 2
                     print(f"⏳ API overloaded. Retrying in {wait_time} seconds...")
                     time.sleep(wait_time)
                 else:
