@@ -48,9 +48,9 @@ The system will leverage multiple MCP servers to extend functionality:
   - Conversation history for context retention
 
 ### 💻 User Interface
-- **Current:** Command-line interface (CLI)
-- **Phase 1:** Streamlit-based chat UI *(planned)*
-- **Phase 2:** Migration to React/Next.js for production-ready web application *(future)*
+- ~~**Current:** Command-line interface (CLI)~~
+- **Current:** Streamlit-based chat UI
+- **Next Phase:** Migration to React/Next.js for production-ready web application *(planned)*
 
 ## 🏗️ Architecture
 
@@ -66,6 +66,7 @@ The system will leverage multiple MCP servers to extend functionality:
 **Current Tools:**
 - LangChain Search (→ migrating to MCP Search Server)
 - Basic CLI interface
+- Basic Streamlit chat UI
 
 ### Planned (v2.0 - LangGraph + MCP)
 #### Application View:
@@ -146,7 +147,7 @@ streamlit run streamlit.py
 - [x] ✅ Review Agent implementation
 - [ ] 🔄 Supervisor Agent orchestration
 - [ ] 🔄 Generalist Agent for non-financial queries
-- [ ] 🔄 CLI interface enhancements
+<!-- - [ ] 🔄 CLI interface enhancements -->
 
 ### Phase 2 - Enhanced Features
 - [x] 📋 Streamlit chat UI
@@ -173,22 +174,22 @@ streamlit run streamlit.py
 - uv (package manager)
 
 **Frontend:**
-- CLI (current)
-- Streamlit (planned)
-- React/Next.js (future)
+- ~~CLI (current)~~
+- Streamlit (current)
+- React/Next.js (planned)
 
 ## ⚠️ Current Limitations
 
-- CLI-only interface (Streamlit UI in development)
-- Single-user focused
+- ~~CLI-only interface (Streamlit UI in development)~~
 - No persistent memory between sessions
 - Limited to basic investment advice
 - No real-time market data
 - Generalist Agent not yet implemented
 - Supervisor routing logic in development
 - No context retention across queries
+<!--- Single-user focused-->
 
-## 📝 Example Usage
+<!-- ## 📝 Example Usage
 
 ```text
 # Financial query
@@ -204,8 +205,9 @@ $ uv run main.py
 > What's the capital of France?
 🔄 Routing to Generalist Agent...
 ✅ Paris is the capital and largest city of France.
-```
+``` -->
 <!-- ## 📞 Contact
 
 *Add contact information* -->
+
 
