@@ -1,225 +1,100 @@
 # Personal Financial AI Agent Assistant
 
-> **🚧 Proof of Concept** - A multiagent AI system for personalized financial advice using LangChain and MCP tools.
+> **🚧 Proof of Concept** - A stateful multi-agent AI system for personalized financial advice using LangGraph, LangChain, and MCP tools.
 
 ## Overview
 
-A **multiagent AI system** that combines specialized financial agents to deliver personalized financial advice. Each agent focuses on a specific domain and collaborates through LangChain's orchestration layer.
+A **multi-agent AI system** that combines specialized financial agents to deliver personalized financial advice. Each agent focuses on a specific domain and collaborates through a cyclical LangGraph orchestration layer, allowing for iterative research and quality review.
 
 ### 🤖 AI Agents
 
-| Agent | Role | Status | Capabilities |
-|-------|------|--------|--------------|
-| 💼 Investment Agent | Specialist | ✅ Active | Portfolio recommendations, market analysis |
-| 🔍 Review Agent | Quality Control | ✅ Active | Validates outputs, provides feedback, ensures consistency |
-| 🎯 Supervisor Agent | Orchestrator | 🔄 In Development  | Routes queries, manages workflow, coordinates agents |
-| 🤖 Generalist Agent | General Assistant | 📋 Planned | Handles general queries unrelated to finance, conversational support |
-| 📊 Tax Specialist Agent | Specialist | 🔄 In Development | Tax optimization, deduction strategies |
-| ⚠️ Risk Assessment Agent | Specialist | 📋 Planned | Risk evaluation, mitigation strategies |
-| 💰 Budget Planner Agent | Specialist | 📋 Planned | Expense tracking, budget optimization |
+| Agent                    | Role              | Status            | Capabilities                                                         |
+| ------------------------ | ----------------- | ----------------- | -------------------------------------------------------------------- |
+| 💼 Investment Agent      | Specialist        | ✅ Active         | Portfolio recommendations, market analysis                           |
+| 🔍 Review Agent          | Quality Control   | ✅ Active         | Validates outputs, provides feedback, ensures consistency            |
+| 🎯 Supervisor Agent      | Orchestrator      | 🔄 In Development | Routes queries, manages workflow, coordinates agents                 |
+| 🤖 Generalist Agent      | General Assistant | 📋 Planned        | Handles general queries unrelated to finance, conversational support |
+| 📊 Tax Specialist Agent  | Specialist        | 🔄 In Development | Tax optimization, deduction strategies                               |
+| ⚠️ Risk Assessment Agent | Specialist        | 📋 Planned        | Risk evaluation, mitigation strategies                               |
+| 💰 Budget Planner Agent  | Specialist        | 📋 Planned        | Expense tracking, budget optimization                                |
 
-**Technology:** LangChain → LangGraph (migration planned) • Model Context Protocol (MCP) • Python 3.11+
+**Technology:** LangGraph • LangChain • Model Context Protocol (MCP) • Python 3.11+
 
-**Agent Flow:**
-1. 🎯 **Supervisor** receives user query and determines intent
-2. Routes to either:
-   - 🤖 **Generalist Agent** → for general/non-financial questions
-   - 💼 **Financial Specialists** → for financial queries (Investment, Tax, Risk, Budget)
-3. 🔍 **Review Agent** validates all specialist outputs before returning to user
+**Agent Flow (Powered by LangGraph `StateGraph`):**
+
+1. 🎯 **User Query** is passed into the initial state.
+2. 💼 **Investment Agent (Researcher)** performs analysis using Search tools and generates a report.
+3. 🔍 **Review Agent** validates the output.
+4. **Conditional Router:**
+   - If Reviewer replies with `PASS` ➡️ Return final response to User.
+   - If Reviewer replies with `FAIL` ➡️ Loop back to the Researcher with feedback for refinement (up to 3 iterations).
 
 ### 🔌 MCP Servers Integration
+
 The system will leverage multiple MCP servers to extend functionality:
 
-- **Web Search Server** 
+- **Web Search Server**
+
   - Real-time market data and financial news retrieval
   - General web search for non-financial queries (Generalist Agent)
-  - *Current*: Using LangChain Search tool
-  - *Planned*: Migration to dedicated MCP Search server
+  - _Current_: Using LangChain Google Search Wrapper
+  - _Planned_: Migration to dedicated MCP Search server
 
-- **File Data Server** *(planned)*
+- **File Data Server** _(planned)_
+
   - Excel/CSV file processing for user-provided portfolio data
   - Historical transaction analysis
-  - Custom financial data imports
 
-- **Database Server** *(planned)*
+- **Database Server** _(planned)_
   - Persistent storage for user preferences and transaction history
   - Portfolio tracking across sessions
-  - Historical performance data
-  - Conversation history for context retention
 
 ### 💻 User Interface
+
 - **Current:** Streamlit-based chat UI with real-time agent interaction ✅
-- **Next Phase:** Migration to React/Next.js for production-ready web application *(planned)*
+- **Next Phase:** Migration to React/Next.js for production-ready web application _(planned)_
 
 ## 🏗️ Architecture
 
-### Current (v1.0 - LangChain POC)
-![Initial Architecture](images/initial_architecture.png)
+### Current (v1.5 - LangGraph State Orchestration)
+
+The system currently uses a cyclic graph architecture to ensure high-quality outputs.
 
 **Flow:**
-1. User submits financial query via Streamlit chat interface
-2. **Investment Agent** performs analysis using Search tools
-3. **Review Agent** validates output and provides feedback
-4. Final verified response returned to user in chat UI
 
-**Current Tools:**
-- LangChain Search (→ migrating to MCP Search Server)
-- ✅ Streamlit chat UI with conversation history
+1. User submits financial query via Streamlit chat interface.
+2. The `StateGraph` initializes the state dictionary.
+3. **Research Node** fetches real-time data and drafts a plan.
+4. **Review Node** audits the plan.
+5. If the plan fails the audit, it is routed back to the Research Node with constructive feedback.
+6. Final verified response returned to user in chat UI.
 
-### Planned (v2.0 - LangGraph + MCP)
-#### Application View:
-![Final Application](images/final_application_view.png)
-#### Architecture View:
-![Final Architecture](images/final_architecture_view.png)
-
-**Enhanced Multi-Agent System Flow:**
-1. User Query → **Supervisor Agent** 
-2. Supervisor routes to appropriate agent:
-   - 🤖 **Generalist Agent** (for general questions like "What's the weather?")
-   - 💼 **Financial Agent** (represents Investment, Tax, Risk, Budget specialists)
-3. Financial agent outputs → **Review Agent** for validation
-4. Final Response → User
-
-*Note: The "Financial Agent" shown in the diagram represents the suite of specialized financial agents (Investment, Tax, Risk, Budget) that will be implemented in the final version. The Generalist Agent handles non-financial queries and bypasses the review process.*
+### Planned (v2.0 - Supervisor Routing + MCP)
 
 **Enhanced Multi-Agent System:**
+
 - 🎯 **Supervisor/Orchestrator** - Routes queries, manages workflow
 - 🤖 **Generalist Agent** - General conversational queries
-- 💼 **Investment Agent** - Portfolio recommendations
-- 📊 **Tax Specialist Agent** - Tax optimization
-- ⚠️ **Risk Assessment Agent** - Risk evaluation
-- 💰 **Budget Planner Agent** - Expense tracking
+- 💼 **Specialist Agents** - Investment, Tax, Risk, Budget
 - 🔍 **Review Agent** - Quality control & feedback
-
-**MCP Servers:**
-- 🔍 Search MCP - Real-time market data & general web search
-- 📊 File Data MCP - Excel/CSV processing
-- 💾 Database MCP - Persistent storage
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **uv** - Python package and project manager
-- Python 3.11+ 
+- Python 3.11+
+- `.env` file containing your `GEMINI_API_KEY`, `GOOGLE_API_KEY`, and `GOOGLE_CSE_ID`
 
 ### Installation
+
 ```bash
 # Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
+curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
 
 # Install dependencies
 uv sync
+
+# Run the Streamlit app
+uv run streamlit run streamlit.py
 ```
-
-### Running the Application
-
-**Option 1: Streamlit Chat UI (Recommended)**
-```bash
-# Activate virtual environment
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux/Mac
-
-# Run Streamlit app
-streamlit run streamlit.py
-```
-
-**Option 2: CLI Interface**
-```bash
-# Run the CLI application
-uv run driver.py
-```
-
-## 🎯 Use Cases
-
-### Financial Queries (Routed to Specialist Agents)
-- "What are good investment options for ₹10,000?"
-- "How can I optimize my tax deductions?"
-- "Analyze the risk in my current portfolio"
-- "Help me create a monthly budget of ₹3000"
-
-### General Queries (Routed to Generalist Agent)
-- "What's the weather forecast for tomorrow?"
-- "Explain how machine learning works"
-- "What are the latest technology news?"
-- "Help me write a professional email"
-- "What's the capital of France?"
-
-## 📋 Roadmap
-
-### Phase 1 - Foundation ✅ **COMPLETED**
-- [x] ✅ Basic LangChain multiagent setup
-- [x] ✅ Investment Agent implementation
-- [x] ✅ Review Agent implementation
-- [x] ✅ Streamlit chat UI with conversation history
-- [ ] 🔄 Supervisor Agent orchestration
-- [ ] 🔄 Generalist Agent for non-financial queries
-
-### Phase 2 - Enhanced Features (In Progress)
-- [ ] 📋 MCP Web Search Server integration
-- [ ] 📋 MCP File Data Server (Excel/CSV processing)
-- [ ] 📋 Tax Specialist Agent
-- [ ] 📋 Risk Assessment Agent
-- [ ] 📋 Context-aware routing (Supervisor logic)
-- [ ] 📋 Conversation memory across sessions
-
-### Phase 3 - Production Ready
-- [ ] 📋 Migration to LangGraph
-- [ ] 📋 React/Next.js web application
-- [ ] 📋 Database integration (MCP Database Server)
-- [ ] 📋 Budget Planner Agent
-- [ ] 📋 Real-time market data integration
-- [ ] 📋 Multi-user support with authentication
-
-## 💻 Tech Stack
-
-**Backend:**
-- LangChain → LangGraph (migration planned)
-- Model Context Protocol (MCP)
-- Python 3.11+
-- uv (package manager)
-
-**Frontend:**
-- ✅ Streamlit (current - interactive chat UI)
-- React/Next.js (planned)
-
-## ⚠️ Current Limitations
-
-- No persistent memory between sessions (in-session only)
-- Limited to basic investment advice
-- Generalist Agent not yet implemented
-- Supervisor routing logic in development
-- No multi-user support
-- No authentication/authorization
-<!-- - No real-time market data integration -->
-
-## 🎨 Features
-
-### Streamlit Chat UI ✅
-- Real-time chat interface
-- Conversation history within session
-- Agent activity tracking
-- Clean, intuitive design
-- Markdown support for formatted responses
-
-## 📝 Example Usage
-
-### Streamlit Chat UI
-1. Launch the app: `streamlit run streamlit.py`
-2. Open browser at `http://localhost:8501`
-3. Type your financial query in the chat input
-4. Watch agents collaborate in real-time
-5. Receive verified investment recommendations
-
-### CLI
-```bash
-$ uv run driver.py
-> What stocks should I invest in for long-term growth?
-🔄 Routing to Investment Agent...
-[Investment Agent performs analysis...]
-🔍 Review Agent validating...
-✅ [Verified investment recommendations provided]
-```
-
-<!-- ## 📞 Contact
-
-*Add contact information* -->
