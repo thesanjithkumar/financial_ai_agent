@@ -1,7 +1,14 @@
+from typing import TypedDict
 from langchain_classic.agents import AgentExecutor, create_react_agent
 
+class AgentState(TypedDict):
+    input: str
+    research_output: str
+    review_feedback: str
+    iterations: int
+    max_iterations: int
 
-def research_agent(llm, search, research_prompt) -> AgentExecutor:
+def research_agent_factory(llm, search, research_prompt) -> AgentExecutor:
     researcher_agent = create_react_agent(llm=llm, tools=[search], prompt=research_prompt)
     return AgentExecutor(
         agent=researcher_agent, 
@@ -10,8 +17,7 @@ def research_agent(llm, search, research_prompt) -> AgentExecutor:
         handle_parsing_errors=True
     )
 
-
-def reviewer_agent(llm, review_prompt) -> AgentExecutor:
+def reviewer_agent_factory(llm, review_prompt) -> AgentExecutor:
     reviewer_agent = create_react_agent(llm=llm, prompt=review_prompt, tools=[])
     return AgentExecutor(
         agent=reviewer_agent, 

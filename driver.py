@@ -2,81 +2,95 @@ import os
 import time
 from dotenv import load_dotenv
 from datetime import datetime
-from google.genai.errors import ServerError
+from langgraph.graph import StateGraph, END
 from langchain_google_genai import ChatGoogleGenerativeAI
-from prompt import research_prompt, review_prompt
-from agents import research_agent, reviewer_agent
 
 load_dotenv()
 
+from prompt import research_prompt, review_prompt
+from agents import research_agent_factory, reviewer_agent_factory, AgentState
 from tools import search
 
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-
-llm = ChatGoogleGenerativeAI(
-    model="gemma-3-27b-it", 
-    google_api_key=GEMINI_API_KEY,
-    temperature=0
-)
+llm = ChatGoogleGenerativeAI(model="gemma-3-27b-it", google_api_key=GEMINI_API_KEY, temperature=0)
 
 current_time = datetime.now().strftime("%B %d, %Y")
-research_prompt = research_prompt(current_time)
-review_prompt = review_prompt()
+res_prompt = research_prompt(current_time)
+rev_prompt = review_prompt()
 
-research_agent = research_agent(llm, search, research_prompt)
-reviewer_agent = reviewer_agent(llm, review_prompt)
+research_executor = research_agent_factory(llm, search, res_prompt)
+review_executor = reviewer_agent_factory(llm, rev_prompt)
 
-def run_financial_system(user_query, max_retries=3):
-    current_feedback = "None"
-    iterations = 0
-    max_iterations = 3
-    final_research_output = ""
 
-    while iterations < max_iterations:
-        print(f"\n--- ROUND {iterations + 1} ---")
-        
-        for retry in range(max_retries):
-            try:
-                research_input = f"Task: {user_query}\nPrevious Feedback: {current_feedback}"
-                res_out = research_agent.invoke({"input": research_input})["output"]
-                final_research_output = res_out
-                
-                rev_out = reviewer_agent.invoke({"input": res_out})["output"]
-                break
-                
-            except ServerError as e:
-                if retry < max_retries - 1:
-                    wait_time = (retry + 1) * 2
-                    print(f"⏳ API overloaded. Retrying in {wait_time} seconds...")
-                    time.sleep(wait_time)
-                else:
-                    raise
-
-        print(f"🔍 Review Result: {'PASS' if 'PASS' in rev_out.upper() else 'FAIL'}")
-
-        if "PASS" in rev_out.upper():
-            return final_research_output
-        else:
-            current_feedback = rev_out
-            iterations += 1
-            print(f"❌ Review failed. Feedback: {rev_out}...")
+def call_researcher(state: AgentState):
+    print(f"\n--- RESEARCH ROUND {state.get('iterations', 0) + 1} ---")
+    research_input = f"Task: {state['input']}\nPrevious Feedback: {state.get('review_feedback', 'None')}"
     
-    return "Reached maximum attempts. Final Research Report:\n" + final_research_output
+    # Simple retry logic for API Overload
+    for retry in range(3):
+        try:
+            res_out = research_executor.invoke({"input": research_input})["output"]
+            return {
+                "research_output": res_out,
+                "iterations": state.get("iterations", 0) + 1
+            }
+        except Exception as e:
+            if "503" in str(e) and retry < 2:
+                time.sleep(5)
+                continue
+            raise e
+
+def call_reviewer(state: AgentState):
+    print("--- REVIEWING REPORT ---")
+    rev_out = review_executor.invoke({"input": state["research_output"]})["output"]
+    return {"review_feedback": rev_out}
+
+def router(state: AgentState):
+    feedback = state["review_feedback"].upper()
+    if "PASS" in feedback or state["iterations"] >= state["max_iterations"]:
+        return "end"
+    else:
+        print(f"❌ Review failed. Feedback: {state['review_feedback']}")
+        return "continue"
+
+
+workflow = StateGraph(AgentState)
+
+workflow.add_node("researcher", call_researcher)
+workflow.add_node("reviewer", call_reviewer)
+
+workflow.set_entry_point("researcher")
+workflow.add_edge("researcher", "reviewer")
+
+workflow.add_conditional_edges(
+    "reviewer",
+    router,
+    {
+        "continue": "researcher",
+        "end": END
+    }
+)
+
+app = workflow.compile()
+
+
+def run_financial_system(user_query):
+    initial_state = {
+        "input": user_query,
+        "max_iterations": 3,
+        "iterations": 0,
+        "review_feedback": "None"
+    }
+    
+    final_output = app.invoke(initial_state)
+    
+    report = final_output["research_output"]
+    if "PASS" not in final_output["review_feedback"].upper():
+        return f"⚠️ Note: Max iterations reached without a full PASS.\n\n{report}"
+    return report
 
 if __name__ == "__main__":
-    print("🤖 Personal Financial AI Agent Assistant")
-    print("=" * 50)
     query = input("\n💬 What financial query do you have today?\n> ")
-    
-    if not query.strip():
-        print("❌ Query cannot be empty!")
-        exit(1)
-        
-    print(f"\n🔄 Processing your query: '{query}'...\n")
-    results = run_financial_system(query)
-    
-    print("\n" + "="*50)
-    print("✅ FINAL VERIFIED PLAN")
-    print("="*50 + "\n")
-    print(results)
+    if query.strip():
+        print(run_financial_system(query))
